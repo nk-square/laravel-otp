@@ -20,6 +20,10 @@
         {
             "type": "git",
             "url": "https://github.com/nk-square/sms.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/nk-square/laravel-sms.git"
         }
     ],
     "autoload": {
