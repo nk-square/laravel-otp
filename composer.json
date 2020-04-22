@@ -1,0 +1,40 @@
+{
+    "name": "nksquare/laravel-otp",
+    "description": "Laravel OTP libaray for sms and email",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Thungdemo Ezong",
+            "email": "tezong@nksquare.co.in"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "illuminate/config": "^5.6",
+        "illuminate/mail": "^5.6",
+        "illuminate/support": "^5.6",
+        "illuminate/view": "^5.6",
+        "nksquare/laravel-sms": "^1.0"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/nk-square/sms.git"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Nksquare\\LaravelSms\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nksquare\\LaravelOtp\\Providers\\OtpServiceProvider"
+            ],
+            "aliases": {
+                "Otp": "Nksquare\\LaravelOtp\\Facades\\Otp"
+            }
+        }
+    }
+}
