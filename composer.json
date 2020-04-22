@@ -1,6 +1,6 @@
 {
     "name": "nksquare/laravel-otp",
-    "description": "Laravel OTP libaray for sms and email",
+    "description": "Laravel library for OTP verification via sms and email",
     "type": "library",
     "authors": [
         {
