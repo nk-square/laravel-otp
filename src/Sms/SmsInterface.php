@@ -3,5 +3,9 @@
 namespace Nksquare\LaravelOtp\Sms;
 
 interface SmsInterface {
-	public function send($number,$message);
+    /**
+     * @param $phoneNo string
+     * @param $message string
+     */
+    public function send($phoneNo,$message);
 }
