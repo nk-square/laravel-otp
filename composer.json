@@ -28,7 +28,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Nksquare\\LaravelSms\\": "src/"
+            "Nksquare\\LaravelOtp\\": "src/"
         }
     },
     "extra": {
