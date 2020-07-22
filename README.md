@@ -1,6 +1,24 @@
 # Laravel OTP
 Laravel library for OTP verification via sms and email
 ## Installation
+Update your composer.json file
+```
+....
+"repositories": [
+    {
+        "type": "git",
+        "url": "https://github.com/nk-square/laravel-sms.git"
+    },
+    {
+        "type": "git",
+        "url": "https://github.com/nk-square/sms.git"
+    },
+    {
+        "type": "git",
+        "url": "https://github.com/nk-square/laravel-otp.git"
+    }
+....
+```
 Run composer
 ```
 composer require nksquare/laravel-otp
