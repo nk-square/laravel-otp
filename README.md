@@ -1,5 +1,7 @@
 # Laravel OTP
 Laravel library for OTP verification via sms and email
+## Dependencies
+This library requires [nk-square/laravel-sms](https://github.com/nk-square/laravel-sms)
 ## Installation
 Update your composer.json file
 ```
