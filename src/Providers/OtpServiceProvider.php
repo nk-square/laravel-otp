@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Mail\Mailer;
 use Nksquare\LaravelOtp\Otp;
+use Nksquare\LaravelOtp\Console\MailMakeCommand;
 
 class OtpServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,13 @@ class OtpServiceProvider extends ServiceProvider
             $otp = app(Otp::class);
             return $otp->verify($parameters[0],$value);
         },'Invalid OTP');
+
+        if ($this->app->runningInConsole()) 
+        {
+            $this->commands([
+                MailMakeCommand::class
+            ]);
+        }
     }
 
     /**
