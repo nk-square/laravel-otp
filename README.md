@@ -30,7 +30,8 @@ Publish config file
 php artisan vendor:publish --provider="Nksquare\LaravelOtp\Providers\OtpServiceProvider" --tag="laravel-otp"
 ```
 ## Usage
-Sending Otp and validating
+Please note that before sending otp you must have set up the [nk-square/laravel-sms](https://github.com/nk-square/laravel-sms) library for sms otp, and valid mail configurations in the .env file for email otp.\
+Sending and validating the otp
 ```php
 namespace App\Http\Controllers;
 
@@ -74,7 +75,7 @@ To use your own email instead of the default, run the command to generate an otp
 ```
 php artisan otp:mail MyOtp --markdown=emails.my-otp
 ```
-Inside the markdown file that you have created(resources/emails/my-otp.blade.php) you can simply access the otp via the $otp variable
+Inside the markdown file that you have created(resources/emails/my-otp.blade.php) you can simply access the otp code via the $code variable
 ```
 @component('mail::message')
 # OTP Verification
