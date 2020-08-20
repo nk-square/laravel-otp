@@ -5,9 +5,8 @@ namespace Nksquare\LaravelOtp\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Nksquare\LaravelOtp\OtpMailable as Mailable;
 
-class OtpMail extends Mailable
+class OtpMail extends OtpMailable
 {
     /**
      * Build the message.
