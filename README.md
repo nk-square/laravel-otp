@@ -91,3 +91,27 @@ use Otp;
 $myOtp = new MyOtp();
 Otp::email('test@email.com',$myOtp);
 ```
+## Same Otp to multiple channels
+To send same otp to multiple channels use the following code
+```php
+use App\Mail\MyOtp;
+use Otp;
+
+$myOtp = new MyOtp();
+Otp::send([
+    'sms' => [
+        'recipient' => '1234567890,
+        'message' => 'Your otp for registration is :code'
+    ],
+    'email' => [
+        'recipient' => 'test@email.com',
+        'mailable' => $myOtp //optional
+    ]
+]);
+```
+To validate the otp pass the list of recipients as arguement, if any one of the recipients match the otp input the validation passes
+```php
+[
+    'otp' => 'required|otp:1234567890,test@email.com'
+];
+```
