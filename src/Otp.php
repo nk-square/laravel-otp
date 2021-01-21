@@ -59,6 +59,16 @@ class Otp
     {
         $code = $this->code->generate(config('otp.length'));
 
+        $this->_sms($phoneNo,$message,$code);
+    }
+
+    /**
+     * @param $phoneNo string
+     * @param $message string
+     * @param $code string
+     */
+    public function _sms($phoneNo,$message,$code)
+    {
         $this->storage->put($phoneNo,$code,$this->getExpiryTime());
 
         $message = str_replace(':code',$code,$message);
@@ -74,6 +84,16 @@ class Otp
     {
         $code = $this->code->generate(config('otp.length'));
 
+        $this->_email($email,$code,$mailable);
+    }
+
+    /**
+     * @param $email string
+     * @param $code string
+     * @param $mailable null|\Illuminate\Mail\Mailable
+     */
+    public function _email($email,$code,$mailable=null)
+    {
         $mailable = $mailable ?? new OtpMail($code);
 
         $mailable->code = $code;
@@ -84,15 +104,24 @@ class Otp
     }
 
     /**
-     * @param $recipient string
+     * @param $recipient mixed
      * @param $code string
      * @return boolean
      */
     public function verify($recipient,$code)
     {
-        $otp = $this->storage->get($recipient);
+        $recipients = !is_array($recipient) ? [$recipient] : $recipient;
 
-        return  $otp && $otp['code'] == $code && $otp['expire']->greaterThan(Carbon::now());
+        foreach ($recipients as $r) 
+        {
+            $otp = $this->storage->get($r);
+
+            if($otp && (string)$otp['code'] == (string)$code && $otp['expire']->greaterThan(Carbon::now()))
+            {
+                return true;
+            }
+        } 
+        return false;  
     }
 
     /**
@@ -101,5 +130,33 @@ class Otp
     public function clearOtp($recipient)
     {
         $this->storage->clear($recipient);
+    }
+
+    /**
+     * @param $channels array
+     */
+    public function send($channels)
+    {
+        $code = $this->code->generate(config('otp.length'));
+
+        if($channels['sms'])
+        {
+            $this->_sms($channels['sms']['recipient'],$channels['sms']['message'],$code);
+        }
+        
+        if($channels['email'])
+        {
+            $this->_email($channels['email']['recipient'],$code,$channels['email']['mailable']??null);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getOtpCode($recipient)
+    {
+        $otp = $this->storage->get($recipient);
+
+        return $otp && $otp['expire']->greaterThan(Carbon::now()) ? $otp['code'] : null;
     }
 }
