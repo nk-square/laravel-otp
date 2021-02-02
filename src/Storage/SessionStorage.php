@@ -31,8 +31,8 @@ class SessionStorage implements StorageInterface
     /**
      * @param $recipient string
      */
-    public function clear($recipient)
+    public function clear($recipient=null)
     {
-        Session::forget("otp.$recipient");
+        Session::forget($recipient ? "otp.$recipient" : 'otp');
     }
 }

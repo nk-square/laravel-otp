@@ -118,6 +118,7 @@ class Otp
 
             if($otp && (string)$otp['code'] == (string)$code && $otp['expire']->greaterThan(Carbon::now()))
             {
+                $this->storage->clear();
                 return true;
             }
         } 
