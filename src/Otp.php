@@ -31,6 +31,11 @@ class Otp
     protected $code;
 
     /**
+     * @var array
+     */
+    protected $correctCode;
+
+    /**
      * @param $sms \Nksquare\LaravelOtp\Sms\SmsInterface
      * @param $mailer \Illuminate\Contracts\Mail\Mailer
      * @param $storage \Nksquare\LaravelOtp\Storage\StorageInterface
@@ -114,11 +119,10 @@ class Otp
 
         foreach ($recipients as $r) 
         {
-            $otp = $this->storage->get($r);
+            $otpCode = $this->getOtpCode($r);
 
-            if($otp && (string)$otp['code'] == (string)$code && $otp['expire']->greaterThan(Carbon::now()))
+            if($otpCode && (string)$otpCode == (string)$code)
             {
-                $this->storage->clear();
                 return true;
             }
         } 
@@ -152,12 +156,18 @@ class Otp
     }
 
     /**
+     * @param $recipient string
      * @return string
      */
     public function getOtpCode($recipient)
     {
-        $otp = $this->storage->get($recipient);
+        if(!isset($this->correctCode[$recipient]))
+        {
+            $this->correctCode[$recipient] = $this->storage->get($recipient);
+            $this->storage->clear($recipient);
+        }
 
+        $otp = $this->correctCode[$recipient];
         return $otp && $otp['expire']->greaterThan(Carbon::now()) ? $otp['code'] : null;
     }
 }

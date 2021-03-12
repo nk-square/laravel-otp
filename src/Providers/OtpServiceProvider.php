@@ -45,7 +45,7 @@ class OtpServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(Otp::class, function ($app) {
+        $this->app->singleton(Otp::class, function ($app) {
             $config = $app->config['otp'];
             $sms = $app->make($config['sms']);
             $mailer = $app->make(Mailer::class);
