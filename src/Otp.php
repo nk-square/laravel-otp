@@ -170,4 +170,12 @@ class Otp
         $otp = $this->correctCode[$recipient];
         return $otp && $otp['expire']->greaterThan(Carbon::now()) ? $otp['code'] : null;
     }
+    
+    /**
+     * @return string
+     */
+    public function humanReadableExpiry()
+    {
+        return ceil(config('otp.ttl')/60).' minutes';
+    }
 }
