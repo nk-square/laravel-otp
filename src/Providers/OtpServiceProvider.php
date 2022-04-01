@@ -27,7 +27,12 @@ class OtpServiceProvider extends ServiceProvider
 
         Validator::extend('otp', function ($attribute, $value, $parameters, $validator) {
             $otp = app(Otp::class);
-            return $otp->verify($parameters,$value);
+            $verified = $otp->verify($parameters,$value);
+            if($verified || $otp->getAttempts($parameters[0])>=config('otp.max_attempts'))
+            {
+                $otp->clearOtp($parameters);
+            }
+            return $verified;
         },'Invalid OTP');
 
         if ($this->app->runningInConsole()) 

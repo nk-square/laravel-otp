@@ -44,4 +44,15 @@ return [
     |
     */
     'storage' => \Nksquare\LaravelOtp\Storage\SessionStorage::class,
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum attempts
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of wrong OTP attempts before the OTP code is invalidated
+    |
+    */
+    'max_attempts' => 3,
 ];

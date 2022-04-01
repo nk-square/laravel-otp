@@ -36,6 +36,11 @@ class Otp
     protected $correctCode;
 
     /**
+     * @var array
+     */
+    protected $attemptsIncreased = [];
+
+    /**
      * @param $sms \Nksquare\LaravelOtp\Sms\SmsInterface
      * @param $mailer \Illuminate\Contracts\Mail\Mailer
      * @param $storage \Nksquare\LaravelOtp\Storage\StorageInterface
@@ -113,28 +118,33 @@ class Otp
      * @param $code string
      * @return boolean
      */
-    public function verify($recipient,$code)
+    public function verify($recipients,$code)
     {
-        $recipients = !is_array($recipient) ? [$recipient] : $recipient;
+        $recipients = !is_array($recipients) ? [$recipients] : $recipients;
 
-        foreach ($recipients as $r) 
+        foreach ($recipients as $recipient) 
         {
-            $otpCode = $this->getOtpCode($r);
+            $otpCode = $this->getOtpCode($recipient);
 
             if($otpCode && (string)$otpCode == (string)$code)
             {
                 return true;
             }
+            $this->increaseAttempts($recipient);
         } 
         return false;  
     }
 
     /**
-     * @param $recipient string
+     * @param $recipient mixed
      */
-    public function clearOtp($recipient)
+    public function clearOtp($recipients)
     {
-        $this->storage->clear($recipient);
+        $recipients = !is_array($recipients) ? [$recipients] : $recipients;
+        foreach ($recipients as $recipient) 
+        {
+            $this->storage->clear($recipient);
+        }
     }
 
     /**
@@ -164,7 +174,6 @@ class Otp
         if(!isset($this->correctCode[$recipient]))
         {
             $this->correctCode[$recipient] = $this->storage->get($recipient);
-            $this->storage->clear($recipient);
         }
 
         $otp = $this->correctCode[$recipient];
@@ -177,5 +186,25 @@ class Otp
     public function humanReadableExpiry()
     {
         return ceil(config('otp.ttl')/60).' minutes';
+    }
+
+    /**
+     * @return string
+     */
+    public function getAttempts($recipient)
+    {
+        return $this->storage->getAttempts($recipient);
+    }
+
+    /**
+     * @return void
+     */
+    public function increaseAttempts($recipient)
+    {
+        if(!isset($this->attemptsIncreased[$recipient]))
+        {
+            $this->attemptsIncreased[$recipient] = true;
+            $this->storage->increaseAttempts($recipient);
+        }
     }
 }
