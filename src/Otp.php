@@ -6,6 +6,7 @@ use Illuminate\Contracts\Mail\Mailer;
 use Nksquare\LaravelOtp\Mail\OtpMail;
 use Nksquare\LaravelOtp\Sms\SmsInterface;
 use Nksquare\LaravelOtp\Storage\StorageInterface;
+use Psr\Log\LoggerInterface;
 use Carbon\Carbon;
 
 class Otp
@@ -31,6 +32,11 @@ class Otp
     protected $code;
 
     /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var array
      */
     protected $correctCode;
@@ -39,6 +45,11 @@ class Otp
      * @var array
      */
     protected $attemptsIncreased = [];
+
+    /**
+     * @var string
+     */
+    protected $message;
 
     /**
      * @param $sms \Nksquare\LaravelOtp\Sms\SmsInterface
@@ -81,9 +92,9 @@ class Otp
     {
         $this->storage->put($phoneNo,$code,$this->getExpiryTime());
 
-        $message = str_replace(':code',$code,$message);
+        $this->message = str_replace(':code',$code,$message);
 
-        $this->sms->send($phoneNo,$message);
+        $this->sms->send($phoneNo,$this->message);
     }
 
     /**
@@ -206,5 +217,14 @@ class Otp
             $this->attemptsIncreased[$recipient] = true;
             $this->storage->increaseAttempts($recipient);
         }
+    }
+
+    /**
+     * get the last sent sms message
+     * @return string|null
+     */
+    public function getLastSms()
+    {
+        return $this->message;
     }
 }
