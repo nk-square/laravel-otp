@@ -19,8 +19,6 @@ class OtpServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views','otp');
 
-        $this->mergeConfigFrom(__DIR__ .'/../config/otp.php', 'otp');
-
         $this->publishes([
             __DIR__.'/../config/otp.php' => config_path('otp.php')
         ],'laravel-otp');
@@ -50,6 +48,8 @@ class OtpServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(__DIR__ .'/../config/otp.php', 'otp');
+        
         $this->app->singleton(Otp::class, function ($app) {
             $config = $app->config['otp'];
             $sms = $app->make($config['sms']);
