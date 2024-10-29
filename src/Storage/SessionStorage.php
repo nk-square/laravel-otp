@@ -2,53 +2,41 @@
 
 namespace Nksquare\LaravelOtp\Storage;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 
 class SessionStorage implements StorageInterface
 {
-    /**
-     * @param $recipient string
-     * @param $code string
-     * @param $expire \Carbon\Carbon
-     */
-    public function put($recipient,$code,$expire)
+    public function put(string $recipient,string $code,Carbon $expire) : void
     {
-        Session::put("otp.$recipient",[
+        Session::put("_otp.$recipient",[
             'code' => $code,
             'expire' => $expire,
             'attempts' => 0
         ]);
     }
 
-    /**
-     * @param $recipient string
-     * @return array
-     */
-    public function get($recipient)
+    public function all() : array
+    {
+        return Session::get("_otp",[]);
+    }
+
+    public function get(string $recipient) : string
     {
         return Session::get("otp.$recipient");
     }
 
-    /**
-     * @param $recipient string
-     */
-    public function clear($recipient=null)
+    public function clear(string $recipient) : void
     {
         Session::forget($recipient ? "otp.$recipient" : 'otp');
     }
-
-    /**
-     * @param $recipient string
-     */
-    public function getAttempts($recipient)
+    
+    public function getAttempts(string $recipient) : ?int
     {
         return $this->get($recipient)['attempts'] ?? null;
     }
-
-    /**
-     * @param $recipient string
-     */
-    public function increaseAttempts($recipient)
+    
+    public function increaseAttempts(string $recipient) : void
     {
         if($this->getAttempts($recipient)!==null)
         {

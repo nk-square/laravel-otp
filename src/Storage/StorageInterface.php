@@ -2,24 +2,16 @@
 
 namespace Nksquare\LaravelOtp\Storage;
 
+use Carbon\Carbon;
+
 interface StorageInterface 
 {
-    /**
-     * @param $recipient string
-     * @param $code string
-     * @param $expire \Carbon\Carbon
-     */
-    public function put($recipient,$code,$expire);
+    public function put(string $recipient,string $code,Carbon $expire) : void;
 
-    /**
-     * @param $recipient string
-     * @return array
-     */
-    public function get($recipient);
+    public function get(string $recipient) : string;
+    
+    public function clear(string $recipient) : void;
 
-    /**
-     * @param $recipient string
-     */
-    public function clear($recipient);
+    public function all() : array;
 
 }
