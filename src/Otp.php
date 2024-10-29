@@ -14,27 +14,27 @@ class Otp
     /**
      * @var \Nksquare\LaravelOtp\Sms\SmsInterface
      */
-    protected $sms;
+    protected SmsInterface $sms;
 
     /**
      * @var \Illuminate\Contracts\Mail\Mailer
      */
-    protected $mailer;
+    protected Mailer $mailer;
 
     /**
      * @var \Nksquare\LaravelOtp\Storage\StorageInterface
      */
-    protected $storage;
+    protected StorageInterface $storage;
 
     /**
      * @var \Nksquare\LaravelOtp\CodeGenerator
      */
-    protected $code;
+    protected CodeGenerator $code;
 
     /**
      * @var \Psr\Log\LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var array
@@ -64,72 +64,22 @@ class Otp
         $this->code = new CodeGenerator();
     }
 
-    /**
-     * @return \Carbon\Carbon
-     */
-    protected function getExpiryTime()
+    public function generateCode() : string
+    {
+        return $this->code->generate(config('otp.length'));
+    }
+
+    protected function getExpiryTime() : Carbon
     {
         return Carbon::now()->addSeconds(config('otp.ttl'));
     }
 
-    /**
-     * @param $phoneNo string
-     * @param $message string
-     */
-    public function sms($phoneNo,$message)
+    public function put(array|string $recipient,string $code) : void
     {
-        $code = $this->code->generate(config('otp.length'));
-
-        $this->_sms($phoneNo,$message,$code);
+        $this->storage->put($recipient,$code,$this->getExpiryTime());
     }
 
-    /**
-     * @param $phoneNo string
-     * @param $message string
-     * @param $code string
-     */
-    public function _sms($phoneNo,$message,$code)
-    {
-        $this->storage->put($phoneNo,$code,$this->getExpiryTime());
-
-        $this->message = str_replace(':code',$code,$message);
-
-        $this->sms->send($phoneNo,$this->message);
-    }
-
-    /**
-     * @param $email string
-     * @param $mailable null|\Illuminate\Mail\Mailable
-     */
-    public function email($email,$mailable=null)
-    {
-        $code = $this->code->generate(config('otp.length'));
-
-        $this->_email($email,$code,$mailable);
-    }
-
-    /**
-     * @param $email string
-     * @param $code string
-     * @param $mailable null|\Illuminate\Mail\Mailable
-     */
-    public function _email($email,$code,$mailable=null)
-    {
-        $mailable = $mailable ?? new OtpMail($code);
-
-        $mailable->code = $code;
-
-        $this->storage->put($email,$code,$this->getExpiryTime());
-
-        $this->mailer->to($email)->send($mailable);
-    }
-
-    /**
-     * @param $recipient mixed
-     * @param $code string
-     * @return boolean
-     */
-    public function verify($recipients,$code)
+    public function verify(array|string $recipients,string $code)
     {
         $recipients = !is_array($recipients) ? [$recipients] : $recipients;
 
@@ -149,30 +99,12 @@ class Otp
     /**
      * @param $recipient mixed
      */
-    public function clearOtp($recipients)
+    public function clearOtp(array|string $recipients)
     {
         $recipients = !is_array($recipients) ? [$recipients] : $recipients;
         foreach ($recipients as $recipient) 
         {
             $this->storage->clear($recipient);
-        }
-    }
-
-    /**
-     * @param $channels array
-     */
-    public function send($channels)
-    {
-        $code = $this->code->generate(config('otp.length'));
-
-        if($channels['sms'])
-        {
-            $this->_sms($channels['sms']['recipient'],$channels['sms']['message'],$code);
-        }
-        
-        if($channels['email'])
-        {
-            $this->_email($channels['email']['recipient'],$code,$channels['email']['mailable']??null);
         }
     }
 
@@ -194,7 +126,7 @@ class Otp
     /**
      * @return string
      */
-    public function humanReadableExpiry()
+    public function humanReadableExpiry() : string
     {
         return ceil(config('otp.ttl')/60).' minutes';
     }
@@ -202,29 +134,30 @@ class Otp
     /**
      * @return string
      */
-    public function getAttempts($recipient)
+    public function getAttempts(string|array $recipient) : ?int
     {
-        return $this->storage->getAttempts($recipient);
+        $recipients = !is_array($recipient) ? [$recipient] : $recipient;
+        $attempts = [];
+        foreach($recipients as $recipient)
+        {
+            if($attempt = $this->storage->getAttempts($recipient))
+            {
+                $attempts[] = $attempt;
+            }
+        }
+        return $attempts ? max($attempts) : null;
     }
 
     /**
      * @return void
      */
-    public function increaseAttempts($recipient)
+    public function increaseAttempts(array|string $recipient) : void
     {
-        if(!isset($this->attemptsIncreased[$recipient]))
+        $recipients = !is_array($recipient) ? [$recipient] : $recipient;
+        foreach($recipients as $recipient)
         {
-            $this->attemptsIncreased[$recipient] = true;
+            dump($recipient);
             $this->storage->increaseAttempts($recipient);
         }
-    }
-
-    /**
-     * get the last sent sms message
-     * @return string|null
-     */
-    public function getLastSms()
-    {
-        return $this->message;
     }
 }

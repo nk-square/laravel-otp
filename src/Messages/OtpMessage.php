@@ -6,8 +6,8 @@ use Nksquare\LaravelSms\Message;
 
 class OtpMessage extends Message
 {
-	public function __construct($title,$code)
+	public function __construct($code)
 	{
-		$this->setMessage('Your OTP for '.$title.' is '.$code);
+		$this->setMessage($code.' is your OTP. Do not share it with anyone.');
 	}
 }

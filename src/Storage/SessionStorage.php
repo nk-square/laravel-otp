@@ -13,7 +13,7 @@ class SessionStorage implements StorageInterface
      */
     public function put($recipient,$code,$expire)
     {
-        Session::put("otp.$recipient",[
+        Session::put("_otp.$recipient",[
             'code' => $code,
             'expire' => $expire,
             'attempts' => 0
@@ -26,7 +26,7 @@ class SessionStorage implements StorageInterface
      */
     public function get($recipient)
     {
-        return Session::get("otp.$recipient");
+        return Session::get("_otp.$recipient");
     }
 
     /**
@@ -34,13 +34,13 @@ class SessionStorage implements StorageInterface
      */
     public function clear($recipient=null)
     {
-        Session::forget($recipient ? "otp.$recipient" : 'otp');
+        Session::forget($recipient ? "_otp.$recipient" : 'otp');
     }
 
     /**
      * @param $recipient string
      */
-    public function getAttempts($recipient)
+    public function getAttempts(string $recipient) : ?int
     {
         return $this->get($recipient)['attempts'] ?? null;
     }
@@ -48,11 +48,11 @@ class SessionStorage implements StorageInterface
     /**
      * @param $recipient string
      */
-    public function increaseAttempts($recipient)
+    public function increaseAttempts(string $recipient) : void
     {
         if($this->getAttempts($recipient)!==null)
         {
-            Session::put("otp.$recipient.attempts",$this->getAttempts($recipient)+1);
+            Session::put("_otp.$recipient.attempts",$this->getAttempts($recipient)+1);
         }
     }
 }

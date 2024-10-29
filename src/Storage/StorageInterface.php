@@ -22,4 +22,8 @@ interface StorageInterface
      */
     public function clear($recipient);
 
+    public function getAttempts(string $recipient) : ?int;
+
+    public function increaseAttempts(string $recipient) : void;
+
 }
