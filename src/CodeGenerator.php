@@ -4,12 +4,7 @@ namespace Nksquare\LaravelOtp;
 
 class CodeGenerator
 {
-    /**
-     * generate otp code
-     * @param $length string
-     * @return string
-     */
-    public function generate($length)
+    public function generate($length) : string
     {
         return mt_rand('1'.str_repeat('0',$length-1),str_repeat('9',$length));
     }

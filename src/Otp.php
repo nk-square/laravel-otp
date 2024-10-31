@@ -2,54 +2,27 @@
 
 namespace Nksquare\LaravelOtp;
 
-use Illuminate\Contracts\Mail\Mailer;
-use Nksquare\LaravelOtp\Mail\OtpMail;
-use Nksquare\LaravelOtp\Sms\SmsInterface;
 use Nksquare\LaravelOtp\Storage\StorageInterface;
-use Psr\Log\LoggerInterface;
 use Carbon\Carbon;
 
 class Otp
 {
-    /**
-     * @var \Nksquare\LaravelOtp\Storage\StorageInterface
-     */
-    protected $storage;
-
-    /**
-     * @var \Nksquare\LaravelOtp\CodeGenerator
-     */
-    protected $code;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @param $sms \Nksquare\LaravelOtp\Sms\SmsInterface
-     * @param $mailer \Illuminate\Contracts\Mail\Mailer
-     * @param $storage \Nksquare\LaravelOtp\Storage\StorageInterface
-     */
-    function __construct(StorageInterface $storage) 
+    protected StorageInterface $storage;
+    
+    protected CodeGenerator $code;
+    
+    function __construct(StorageInterface $storage,CodeGenerator $code) 
     {
         $this->storage = $storage;
-        $this->code = new CodeGenerator();
+        $this->code = $code;
     }
     
     protected function getExpiryTime() : Carbon
     {
-        return Carbon::now()->addSeconds(config('otp.ttl'));
+        return now()->addSeconds(config('otp.ttl'));
     }
 
-    public function put(string|array $recipients,string $code) : void
-    {
-        $recipients = is_array($recipients) ? implode('|',$recipients) : $recipients;
-        
-        $this->storage->put($recipients,$code,$this->getExpiryTime());
-    }
-    
-    public function verify(array|string $recipients,string $code) : bool
+    protected function getOtp(array|string $recipients) : ?array
     {
         $recipients = is_array($recipients) ? $recipients : [$recipients];
 
@@ -59,31 +32,33 @@ class Otp
         {
             $keys = explode('|',$key);
             
-            if(count(array_intersect($recipients,$keys))>0)
+            if(count(array_intersect($recipients,$keys))>0 && now()->lessThanOrEqualTo($otp['expire']))
             {
-                if($otp['code']==$code && $otp['expire']->greaterThan(now()))
-                {
-                    return true;
-                }
+                return $otp;
             }
         }
-        return false;  
+        return null;
     }
-    
-    public function clearOtp(string|array $recipients) : void
-    {
-        $recipients = !is_array($recipients) ? [$recipients] : $recipients;
-        foreach ($recipients as $recipient) 
-        {
-            $this->storage->clear($recipient);
-        }
-    }
-    
-    public function getOtpCode(string $recipient) : ?string
-    {
-        $otp = $this->storage->get($recipient);
 
-        return is_array($otp) && $otp['expire']->greaterThan(now()) ? $otp['code'] : null;
+    public function generate(string|array $recipients) : string
+    {
+        $code = $this->code->generate(config('otp.length'));
+        $this->put($recipients,$code);
+        return $code;
+    }
+
+    public function put(string|array $recipients,string $code) : void
+    {
+        $recipients = is_array($recipients) ? implode('|',$recipients) : $recipients;
+        
+        $this->storage->put($recipients,$code,$this->getExpiryTime());
+    }
+    
+    public function verify(array|string $recipients,?string $code) : bool
+    {
+        $otp = $this->getOtp($recipients);
+
+        return $otp!==null && $otp['code'] == $code;
     }
     
     public function humanReadableExpiry() : string
@@ -91,13 +66,50 @@ class Otp
         return ceil(config('otp.ttl')/60).' minutes';
     }
 
-    public function getAttempts($recipient) : ?int
+    public function getAttempts(string|array $recipients) : ?int
     {
-        return $this->storage->getAttempts($recipient);
+        if($otp = $this->getOtp($recipients))
+        {
+            return $otp['attempts'];
+        }
+        return null;
+    }
+
+    protected function resolveStorageKey(string|array $recipients) : ?string
+    {
+        $recipients = is_array($recipients) ? $recipients : [$recipients];
+
+        $otps = $this->storage->all();
+
+        foreach($otps as $key => $otp)
+        {
+            $keys = explode('|',$key);
+            if(count(array_intersect($recipients,$keys))>0)
+            {
+                return $key;
+            }
+        }
+        return null;
     }
     
-    public function increaseAttempts($recipient) : void
+    public function forget(string|array $recipients) : void
     {
-        $this->storage->increaseAttempts($recipient);
+        if($key = $this->resolveStorageKey($recipients))
+        {
+            $this->storage->forget($key);
+        }
+    }
+
+    public function flush() : void
+    {
+        $this->storage->flush();
+    }
+    
+    public function increaseAttempts(string|array $recipients) : void
+    {
+        if($key = $this->resolveStorageKey($recipients))
+        {
+            $this->storage->increaseAttempts($key);
+        }
     }
 }

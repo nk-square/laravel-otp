@@ -54,5 +54,5 @@ return [
     | Maximum number of wrong OTP attempts before the OTP code is invalidated
     |
     */
-    'max_attempts' => 3,
+    'max_attempts' => 5,
 ];
