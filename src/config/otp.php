@@ -23,18 +23,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Sms driver class
-    |--------------------------------------------------------------------------
-    |
-    | If you want to use your own sms driver, replace this value with 
-    | the full class path of your sms driver class. Your driver class
-    | should implement \Nksquare\LaravelOtp\Sms\SmsInterface.
-    |
-    */
-    'sms' => \Nksquare\LaravelOtp\Sms\Sms::class,
-
-    /*
-    |--------------------------------------------------------------------------
     | Storage class
     |--------------------------------------------------------------------------
     |
