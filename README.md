@@ -36,6 +36,7 @@ Sending and validating the otp
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Nksquare\LaravelOtp\Rules\OtpVerify;
 use Otp;
 
 class OtpController extends Controller
@@ -43,13 +44,12 @@ class OtpController extends Controller
     /**
      * sending otp
      */
-    public function send()
+    public function generateOtp()
     {
-        //send sms otp
-        Otp::sms('1234567890','Your otp for test is :code');
+        // generate otp against a key
+        $code = Otp::generate('9236852397');
         
-        //send email otp
-        Otp::email('test@email.com');
+        // send otp sms or email here
     }
     
     /**
@@ -59,59 +59,7 @@ class OtpController extends Controller
     {
         //validate the sms otp
         $this->validate($request,[
-            'otp' => 'required|otp:1234567890',
-        ]);
-        
-        //validate the email otp
-        $this->validate($request,[
-            'otp_email' => 'required|otp:test@email.com',
+            'otp' => [new OtpVerify('9236852397')],
         ]);
     }
 }
-
-```
-## Customizing email
-To use your own email instead of the default, run the command to generate an otp mail in the location app/Mail/MyOtp.php
-```
-php artisan otp:mail MyOtp --markdown=emails.my-otp
-```
-Inside the markdown file that you have created(resources/emails/my-otp.blade.php) you can simply access the otp code via the $code variable
-```
-@component('mail::message')
-# OTP Verification
-My Custom Otp Mail
-Your OTP is {{$code}}. 
-@endcomponent
-```
-And then finally instantiate your custom otp mail and pass it to the Otp::email method
-```php
-use App\Mail\MyOtp;
-use Otp;
-
-$myOtp = new MyOtp();
-Otp::email('test@email.com',$myOtp);
-```
-## Same Otp to multiple channels
-To send same otp to multiple channels use the following code
-```php
-use App\Mail\MyOtp;
-use Otp;
-
-$myOtp = new MyOtp();
-Otp::send([
-    'sms' => [
-        'recipient' => '1234567890,
-        'message' => 'Your otp for registration is :code'
-    ],
-    'email' => [
-        'recipient' => 'test@email.com',
-        'mailable' => $myOtp //optional
-    ]
-]);
-```
-To validate the otp pass the list of recipients as arguement, if any one of the recipients match the otp input the validation passes
-```php
-[
-    'otp' => 'required|otp:1234567890,test@email.com'
-];
-```
