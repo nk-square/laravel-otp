@@ -23,6 +23,13 @@ class OtpServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/otp.php' => config_path('otp.php')
         ],'laravel-otp');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/' => database_path('migrations')
+        ], 'laravel-otp-migrations');
+
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        
     }
 
     /**
