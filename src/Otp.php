@@ -22,7 +22,7 @@ class Otp
         return now()->addSeconds(config('otp.ttl'));
     }
 
-    protected function getOtp(array|string $recipients) : ?array
+    public function getOtp(array|string $recipients) : ?array
     {
         $recipients = is_array($recipients) ? $recipients : [$recipients];
 
