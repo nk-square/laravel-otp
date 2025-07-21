@@ -9,8 +9,9 @@ class DatabaseStorage implements StorageInterface
 {
     public function put(string $recipient,string $code,Carbon $expire) : void
     {
-        DB::table('otp')->insert([
-            'recipient' => $recipient,
+        DB::table('otp')->updateOrInsert([
+            'recipient' => $recipient
+        ],[
             'code' => $code,
             'expire' => $expire,
             'attempts' => 0
