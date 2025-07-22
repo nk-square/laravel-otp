@@ -24,7 +24,7 @@ class DatabaseStorage implements StorageInterface
             return [
                 $item->recipient => [
                     'code' => $item->code,
-                    'expire' => $item->expire,
+                    'expire' => Carbon::parse($item->expire),
                     'attempts' => $item->attempts
                 ]
             ];

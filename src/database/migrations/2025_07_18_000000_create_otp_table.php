@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('recipient',100)->index();
             $table->string('code',50);
             $table->integer('attempts');
-            $table->timestamp('expire');
+            $table->timestamp('expire')->nullable();
             $table->timestamps();
         });
     }
