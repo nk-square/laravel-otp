@@ -36,4 +36,8 @@ class OtpVerify implements ValidationRule
             Otp::increaseAttempts($this->recipients);
         }
     }
+
+    public function invalidate() : void {
+        Otp::forget($this->recipients);
+    }
 }
